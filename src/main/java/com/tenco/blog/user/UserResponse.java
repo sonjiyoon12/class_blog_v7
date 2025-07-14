@@ -53,6 +53,7 @@ public class UserResponse {
         }
     }
 
+    // 사용자 정보 조회 응답 DTO
     @Data
     public static class DetailDTO{
         private Long id;
