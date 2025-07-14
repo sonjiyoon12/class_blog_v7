@@ -3,6 +3,7 @@ package com.tenco.blog._core.config;
 import com.tenco.blog._core.interceptor.LoginInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -16,11 +17,34 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
-                // 인터셉터가 동작할 URI 패턴을 지정
-               .addPathPatterns("/board/**", "/user/**", "/reply/**")
-                // 인터셉터에서 제외할 URI 패턴 설정
-               .excludePathPatterns("/board/{id:\\d+}");
-                // \\d+ 는 정규표현식으로 1개 이상의 숫자를 의미
-                // /board/1 , /board/22
+                // REST API 경로 변경
+                .addPathPatterns("/api/**")
+                // 공개 API 는 제외 처리
+                .excludePathPatterns(
+                        "/api/boards", // 게시글 목록은 누구나 응답 받을 수 있음
+                        "/api/boards/{id:\\d+}", // 게시글 상세보기 누구나 응답 허용
+                        "/api/auth/login", // 로그인 요청은 누구나 허용
+                        "/api/auth/join" // 회원가입 요청도 누구나 허용
+                );
+    }
+
+    // cors 정책 설정
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api-test/**")
+                //.allowedOrigins("https://api.kakao.com:8080") 특정 도메인만 등록 가능
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*")
+                .allowCredentials(false); // 인증이 필요한 경우 true
+
+        // 필요하다면 중복 등록 가능
+        registry.addMapping("/api/**")
+                .allowedOrigins("*") // 모든 출처 허용 (개발 시에만 사용)
+                .allowedMethods("*")  // 모든 HTTP 메서드 허용
+                .allowedHeaders("*")  // 모든 HTTP 메서드 허용
+                .allowCredentials(false)
+                .maxAge(3600);
     }
 }
