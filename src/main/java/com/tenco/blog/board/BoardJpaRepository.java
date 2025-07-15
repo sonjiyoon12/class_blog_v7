@@ -27,5 +27,4 @@ public interface BoardJpaRepository extends JpaRepository<Board, Long> {
     // 게시글 ID 로 한방에 유저 정보도 가져오기 - JOIN FETCH 사용하면 됨
     @Query("SELECT b FROM Board b JOIN FETCH b.user u WHERE b.id = :id")
     Optional<Board> findByIdJoinUser(@Param("id") Long id);
-
 }
