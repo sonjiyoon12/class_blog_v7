@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @RequiredArgsConstructor
-@Configuration // IoC 처리 (싱글톤 패턴 관리)
+//@Configuration // IoC 처리 (싱글톤 패턴 관리)
 public class WebMvcConfig implements WebMvcConfigurer {
 
     // DI 처리(생성자 의존 주입)
@@ -45,6 +45,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowedMethods("*")  // 모든 HTTP 메서드 허용
                 .allowedHeaders("*")  // 모든 HTTP 메서드 허용
                 .allowCredentials(false)
-                .maxAge(3600);
+                .maxAge(3600);          // 사전 요청을 한번 보내면 3600초 동안 안보내겠다
     }
 }
