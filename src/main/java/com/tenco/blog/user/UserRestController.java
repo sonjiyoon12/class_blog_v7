@@ -3,23 +3,20 @@ package com.tenco.blog.user;
 import com.tenco.blog._core.common.ApiUtil;
 import com.tenco.blog.utils.Define;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+
 
 @RequiredArgsConstructor
 @Slf4j
 @RestController // @Controller + @ResponseBody
 public class UserRestController {
-
-    // @Slf4j 사용 시 자동 선언 됨
-    // private static final Logger log = LoggerFactory.getLogger(UserRestController.class);
 
     @Autowired
     private final UserService userService;
@@ -34,11 +31,10 @@ public class UserRestController {
     @PostMapping("/join")
     // public ResponseEntity<ApiUtil<UserResponse.JoinDTO>> join(){
     // JSON 형식에 데이터를 추출 할 때 @RequestBody 선언
-    public ResponseEntity<?> join(@RequestBody UserRequest.JoinDTO reqDTO) {
+    public ResponseEntity<?> join(@Valid @RequestBody UserRequest.JoinDTO reqDTO,
+                                  Errors errors) {
         log.info("회원가입 API 호출 - 사용자명 :{}, 이메일:{}",
                 reqDTO.getUsername(), reqDTO.getEmail());
-
-        reqDTO.validate();
 
         // 서비스에 위임 처리
         UserResponse.JoinDTO joinUser = userService.join(reqDTO);
@@ -53,11 +49,10 @@ public class UserRestController {
     // http://localhost:8080/login
     @PostMapping("/login")
     public ResponseEntity<ApiUtil<UserResponse.LoginDTO>> login(
-            @RequestBody UserRequest.LoginDTO reqDTO, HttpSession session) {
+             @Valid @RequestBody UserRequest.LoginDTO reqDTO,
+             Errors errors, HttpSession session) {
 
         log.info("로그인 API 호출 - 사용자명: {}", reqDTO.getUsername());
-        reqDTO.validate(); // 유효성 검사
-
         UserResponse.LoginDTO loginUser = userService.login(reqDTO);
 //        // 세션에 정보 저장
 //        session.setAttribute(Define.SESSION_USER, loginUser);
@@ -82,10 +77,10 @@ public class UserRestController {
     // 회원 정보 수정
     @PutMapping("/api/users/{id}")
     public ResponseEntity<?> updateUser(@PathVariable(name = "id") Long id,
-                                        @RequestBody UserRequest.UpdateDTO updateDTO){
+                                        @Valid @RequestBody UserRequest.UpdateDTO updateDTO,
+                                        Errors errors){
+
         // 인증 검사는 인터셉터에서 처리 됨
-        // 유효성 검사
-        updateDTO.validate();
         UserResponse.UpdateDTO updateUser = userService.updateById(id, updateDTO);
         return ResponseEntity.ok(new ApiUtil<>(updateUser));
     }
