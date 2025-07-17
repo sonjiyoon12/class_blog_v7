@@ -1,12 +1,11 @@
 package com.tenco.blog.user;
 
 import com.tenco.blog._core.errors.exception.Exception400;
+import com.tenco.blog._core.errors.exception.Exception401;
 import com.tenco.blog._core.errors.exception.Exception403;
 import com.tenco.blog._core.errors.exception.Exception404;
+import com.tenco.blog._core.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,13 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true) // 클래스 레벨에서의 읽기 전용 설정
 public class UserService {
 
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserJpaRepository userJpaRepository;
 
-
-    /**
-     * 회원가입 처리 - DTO 변환 책임
-     */
+    // 회원 가입 처리
     @Transactional // 메서드 레벨에서 쓰기 전용 트랜잭션 활성화
     public UserResponse.JoinDTO join(UserRequest.JoinDTO joinDTO) {
         //1. 사용자명 중복 체크
@@ -31,75 +26,56 @@ public class UserService {
                 });
 
         // 2. 회원 가입 처리
-        User savedUser =userJpaRepository.save(joinDTO.toEntity());
+        User savedUser = userJpaRepository.save(joinDTO.toEntity());
         // 3. 응답 DTO로 변환해서 변환 일을 시킴
         return new UserResponse.JoinDTO(savedUser);
     }
 
-    /**
-     * 로그인 처리 - 응답 DTO 변환 책임
-     */
-    public UserResponse.LoginDTO login(UserRequest.LoginDTO loginDTO) {
+    // 로그인 처리
+    public String login(UserRequest.LoginDTO loginDTO) {
         // 회원 정보 조회
-       User selectedUser = userJpaRepository
-               .findByUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword())
+        User selectedUser = userJpaRepository
+                .findByUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword())
                 .orElseThrow(() -> {
-                    throw new Exception400("사용자명 또는 비밀번호가 틀렸어요");
+                    throw new Exception401("사용자명 또는 비밀번호가 틀렸어요");
                 });
-
-        // User 엔티티를 응답 DTO 반환해서 응답 처리
-        return new UserResponse.LoginDTO(selectedUser);
-
+        // JWT 발급해서 Controller 단으로 넘겨 주면 된다.
+        String jwt = JwtUtil.create(selectedUser);
+        return jwt;
     }
 
-    /**
-     *  사용자 정보 조회 - 응답 DTO 반환 책임
-     */
-    public UserResponse.DetailDTO findById(Long id) {
+    // 회원 정보 조회
+    public UserResponse.DetailDTO findUserById(Long requestUserId, Long sessionUserId) {
 
-        // 인증 처리 --> 세션 기반(JWT 추후 변경)
-        // 권한 검사 일단 생략...
-
-        User selectedUser = userJpaRepository.findById(id).orElseThrow(() -> {
-            log.warn("사용자 조회 실패 - ID {}", id);
-             return new Exception404("사용자를 찾을 수 없습니다");
+        // 권한 검사
+        if (!requestUserId.equals(sessionUserId)) {
+            throw new Exception403("본인 정보만 조회 가능합니다");
+        }
+        // 정보 조회
+        User selectedUser = userJpaRepository.findById(requestUserId).orElseThrow(() -> {
+            throw new Exception404("사용자를 찾을 수 없습니다");
         });
-        // 응답 DTO 변환처리
+        // 응답 DTO 변환 처리
         return new UserResponse.DetailDTO(selectedUser);
     }
 
-    /**
-     *  회원정보 수정 처리 - DTO 변환 책임
-     */
+    // 회원 정보 수정 처리
     @Transactional
-    public UserResponse.UpdateDTO updateById(Long userId, UserRequest.UpdateDTO updateDTO) {
-        log.info("회원 정보 수정 서비스 처리 시작 - ID : {}", userId);
-
+    public UserResponse.UpdateDTO updateById(Long requestUserId,
+                                             Long sessionUserId,
+                                             UserRequest.UpdateDTO updateDTO) {
         // 1. 권한 체크
-        User selectedUser = userJpaRepository.findById(userId)
-                .orElseThrow(() -> {
-                    throw new Exception404("사용자를 찾을 수 없습니다");
-                });
+        if (!requestUserId.equals(sessionUserId)) {
+            throw new Exception403("본인 정보만 조회 가능합니다");
+        }
+        // 정보 조회 1차 캐시에 영속화 시키기
+        User selectedUser = userJpaRepository.findById(requestUserId).orElseThrow(() -> {
+            throw new Exception404("사용자를 찾을 수 없습니다");
+        });
         // 2. 더티 체킹을 통한 회원 정보 수정
         selectedUser.update(updateDTO);
 
         // 3. 응답 DTO 반환
         return new UserResponse.UpdateDTO(selectedUser);
-    }
-
-    // 회원 정보 조회
-    public UserResponse.DetailDTO findUserById(Long id, User sessionUser) {
-
-        // 권한 검사
-        if(!sessionUser.getId().equals(id)) {
-            throw new Exception403("본인 정보만 조회 가능합니다");
-        }
-        // 정보 조회
-         User selectedUser = userJpaRepository.findById(id).orElseThrow(() -> {
-            throw new Exception404("사용자를 찾을 수 없습니다");
-        });
-
-        // 응답 DTO 변환 처리
-        return new UserResponse.DetailDTO(selectedUser);
     }
 }

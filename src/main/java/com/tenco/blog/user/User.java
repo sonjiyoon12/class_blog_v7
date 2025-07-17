@@ -24,8 +24,7 @@ public class User {
 
     private String password;
     private String email;
-    // now() -> x
-    // 엔티티가 영속화 될 때 자동으로 pc 현재시간을 설정해 준다
+
     @CreationTimestamp
     private Timestamp createdAt;
 
@@ -46,7 +45,7 @@ public class User {
         this.email = updateDTO.getEmail();
 
         //변경 감시(Dirty checking)
-        // 1. 영속성 컨탣스트가 최초 상태를 스냅샷 보관
+        // 1. 영속성 컨택스트가 최초 상태를 스냅샷 보관
         // 2. 필드값 변경 시 현재 상태와 스냅샷 상태 비교
         // 3. 트랜잭션 커밋이 되면 변경된 필드만 UPDATE 쿼리 자동 생성
         // 4. 반영 처리
