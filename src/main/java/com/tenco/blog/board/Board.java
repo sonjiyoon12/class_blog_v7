@@ -68,8 +68,6 @@ public class Board {
      * 영속성 전이
      * - 게시글 삭제 시 관련된 모든 댓글도 자동 삭제 처리 함
      * - 데이터 무결성 보장
-     *
-     *
      */
     @OrderBy("id DESC") // 정렬 옵션 설정
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "board", cascade = CascadeType.REMOVE)
@@ -84,6 +82,11 @@ public class Board {
         // 필드 값 변경 감지해서 더티 체킹
         // 트랜잭션이 끝나는 시점에 자동으로 Update 쿼리를 생성해서
         // 물리적인 저장 장치인 DB 에 commit (반영 함)
+    }
+
+    // 편의 메서드
+    public String getWriterName() {
+        return this.getUser().getUsername();
     }
 }
 

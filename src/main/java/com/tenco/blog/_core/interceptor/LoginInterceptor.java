@@ -29,7 +29,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         log.debug("==== JWT 인증 인터셉터 시작 ====");
         String jwt = request.getHeader("Authorization");
         // Bearer + 공백dkafdhsks.fnfjdsfdkdf
-        if(jwt == null || jwt.startsWith("Bearer ")) {
+        if(jwt == null || jwt.startsWith("Bearer ") == false) {
             throw new Exception401("JWT 토큰을 전달해주세요");
         }
         jwt = jwt.replace("Bearer ",""); // Bearer 없앤다
@@ -42,7 +42,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             // session.setAttribute(Define.SESSION_USER, sessionUser);
 
             // JWT 는 stateless 개념을 지키기 위해서 나옴(모바일 쿠키에 접근 못함)
-            // request.setAttribute는 요천 단위로 데이터를 저장하고 소멸 합니다.
+            // request.setAttribute는 요청 단위로 데이터를 저장하고 소멸 합니다.
             // 즉, 해당 데이터는 요청이 처리된 후 사라지며, 서버에 세션메모리에 저장되지 않습니다.
             request.setAttribute(Define.SESSION_USER, sessionUser);
             return true;

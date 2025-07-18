@@ -1,6 +1,5 @@
 package com.tenco.blog.reply;
 
-import com.tenco.blog._core.errors.exception.Exception400;
 import com.tenco.blog.board.Board;
 import com.tenco.blog.user.User;
 import jakarta.validation.constraints.NotEmpty;

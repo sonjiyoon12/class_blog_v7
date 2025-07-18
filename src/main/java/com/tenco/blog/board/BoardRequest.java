@@ -20,7 +20,6 @@ public class BoardRequest {
         @NotEmpty(message = "내용은 필수입니다")
         @Size(min = 10, max = 1000, message = "내용은 10~1000자 이내로 작성해주세요")
         private String content;
-        // username 제거 : 세션에서 가져올 예정
 
         // (User) <-- toEntity() 호출할 때 세션에서 가져와서 넣어 주면 됨
         public Board toEntity(User user) {

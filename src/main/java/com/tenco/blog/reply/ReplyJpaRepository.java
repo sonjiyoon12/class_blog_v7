@@ -13,4 +13,5 @@ public interface ReplyJpaRepository extends JpaRepository<Reply, Long> {
     // 수정은 - 더티 체킹 사용 ( Reply 객체 조회 <-- 상태값 변경 ) 트랜 --> commit
 
     // 추후 필요한 기능은 JPQL, 네이티브 쿼리, 쿼리 메서드 등.. 추가
+
 }

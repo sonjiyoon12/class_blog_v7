@@ -1,6 +1,7 @@
 package com.tenco.blog.board;
 
 import com.tenco.blog.reply.Reply;
+import com.tenco.blog.user.SessionUser;
 import com.tenco.blog.user.User;
 import lombok.Builder;
 import lombok.Data;
@@ -39,7 +40,7 @@ public class BoardResponse {
         private boolean isBoardOwner;
         private List<ReplyDTO> replies;
 
-        public DetailDTO(Board board, User sessionUser) {
+        public DetailDTO(Board board, SessionUser sessionUser) {
             this.id = board.getId();
             this.title = board.getTitle();
             this.content = board.getContent();
@@ -48,26 +49,6 @@ public class BoardResponse {
             this.isBoardOwner = sessionUser != null && board.isOwner(sessionUser.getId());
             // [() () () ()]  <---- ReplyDTO. 객체 타입
             this.replies = new ArrayList<>();
-
-            // board.getReplies() <---  List<Reply>
-
-            // ----------------------------
-            // 댓글 3 --> [reply1, reply2, reply3]
-            // for - 1 (reply1)
-            //
-            // reply1 -->  new ReplyDTO(r, u) 변환해서 --> add [() ]
-            //  변환해서 --> add [(ReplyDTO),  ]
-            // for - 1 (reply1)
-            //
-            // reply2 -->  new ReplyDTO(r, u) 변환해서 --> add [() ]
-            //  변환해서 --> add [(ReplyDTO),  ]
-            // for - 2 (reply1)
-            //
-            // reply3 -->  new ReplyDTO(r, u) 변환해서 --> add [() ]
-            //  변환해서 --> add [(ReplyDTO), (ReplyDTO),  (ReplyDTO), ]
-            // DetailDTO
-            // -- 생략
-            //    [(ReplyDTO), (ReplyDTO),  (ReplyDTO)]  <--- replies
             for (Reply reply : board.getReplies()) {
                 // 응답 DTO 변수 안에 값을 할당하는 코드
                 this.replies.add(new ReplyDTO(reply, sessionUser));
@@ -85,7 +66,7 @@ public class BoardResponse {
         private boolean isReplyOwner;
 
         @Builder
-        public ReplyDTO(Reply reply, User sessionUser) {
+        public ReplyDTO(Reply reply, SessionUser sessionUser) {
             this.id = reply.getId();
             this.comment = reply.getComment();
             this.writerName = reply.getUser().getUsername();
